@@ -157,7 +157,7 @@ const boundingBoxFragmentSource = `#version 300 es
   //  |
   //  o-----> x
 
-  // So we are generating the triangles: (0, 1, 2), (1, 2, 3)
+  // So we are generating the triangles: (0, 1, 2), (0, 2, 3)
 
 const volumeRenderingVertexSource = `#version 300 es
   // WebGL2 requires specifying the floating point precision once per program object
@@ -197,7 +197,7 @@ const volumeRenderingFragmentSource = `#version 300 es
   uniform sampler2D entryPoints;  // The texture that holds the entry points
   uniform sampler2D exitPoints;   // The texture that holds the exit points
 
-  uniform sampler3D volume;       // The texture that holds the volume data
+  uniform sampler3D volume;           // The texture that holds the volume data
   uniform sampler2D transferFunction; // The texture that holds the transfer function data
                                       // WebGL doesn't like 1D textures, so this is a 2D
                                       // texture that is only 1 pixel high
@@ -273,32 +273,23 @@ const volumeRenderingFragmentSource = `#version 300 es
       // contribution.  If the alpha value is 0, it will not contribute anything, so skip
       if (color.a > 0.0) {
         if (compositingMethod == CompositingMethodFrontToBack) {
-          //
-          //   @TODO: Implement the front-to-back compositing here
-          //
-
-
-
-
+          // Continuosly blend colors front to back
+          // 'result' holding the accumulated values
+          // 'color' holding the current values
+          result.rgb += (1.0 - result.a) * color.rgb * color.a;
+          result.a += (1.0 - result.a) * color.a;
         }
         else if (compositingMethod == CompositingMethodFirstHitPoint) {
-          //
-          //   @TODO: Implement the first hitpoint compositing here
-          //
-
-
-
-
-
+          // First hit should just return immediately since we already check for alpha > 0.0
+          // Setting alpha to 1.0 to increase visibility
+          color.a = 1.0;
+          return color;
         }
         else if (compositingMethod == CompositingMethodMaximumIntensityProjection) {
-          //
-          //   @TODO: Implement the maximum-intensity projection here
-          //
-
-
-
-
+          // Only update the return value if it's more opaque than the current return value
+          if (color.a > result.a) {
+            result = color;
+          }
         }
       }
 
