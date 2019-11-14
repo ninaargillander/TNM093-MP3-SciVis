@@ -18,8 +18,9 @@ class Node {
     this.b = b;
   }
 
-  getCSSColor() {
-    return d3.rgb(this.r, this.g, this.b, this.y);
+  getCSSColor(alpha) {
+    if (alpha !== null) return d3.rgb(this.r, this.g, this.b, alpha);
+    else return d3.rgb(this.r, this.g, this.b);
   }
 
   getOffsetPercentage(width) {
