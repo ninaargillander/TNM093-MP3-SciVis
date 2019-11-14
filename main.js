@@ -26,7 +26,8 @@ nodeManager.addNode(67, 12, 19, 110, 140);
 nodeManager.addNode(17, 32, 29, 12, 240);
 nodeManager.addNode(37, 62, 109, 3, 80);
 nodeManager.addNode(167, 19, 69, 10, 10);
-nodeManager.addNode(width, 28, 4, 155, 26);
+nodeManager.addNode(width - margins.left - margins.right, 28, 4, 155, 26);
+nodeManager.addNode(0, 0, 4, 155, 26);
 
 // Redraw editor after adding nodes
 editor.draw();

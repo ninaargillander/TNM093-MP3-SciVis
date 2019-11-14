@@ -18,6 +18,10 @@ class Editor {
     this.innerWidth = width - margins.left - margins.right;
     this.innerHeight = height - margins.top - margins.bottom;
 
+    // Height of the editor area
+    this.editorHeight =
+      this.innerHeight - this.previewHeight - this.previewTopPadding;
+
     // Document selections
     this.div = d3.select('#transferFunctionEditor');
     this.svg = this.div.append('svg');
@@ -44,52 +48,106 @@ class Editor {
           this.previewHeight})`
       );
 
+    // Initialize editor elements
+    this.graphOrigin = this.svg
+      .append('g')
+      .attr(
+        'transform',
+        `translate(${margins.left}, ${margins.top +
+          this.innerHeight -
+          this.previewHeight -
+          this.previewTopPadding})`
+      );
+
+    // Background for preview element
+    this.previewGroup
+      .append('rect')
+      .attr('width', this.innerWidth)
+      .attr('height', this.previewHeight)
+      .attr('fill', 'black');
+
+    this.previewElement = this.previewGroup
+      .append('rect')
+      .attr('width', this.innerWidth)
+      .attr('height', this.previewHeight)
+      .attr('fill', 'black');
+
     // Draw editor
     this.draw();
   }
 
   draw() {
-    // Start by generating/updating the gradient
-    this.generateGradient();
-
-    // Add a test rect
-    this.editorGroup
-      .append('rect')
-      .attr('width', this.innerWidth)
-      .attr(
-        'height',
-        this.innerHeight - this.previewHeight - this.previewTopPadding
-      )
-      .attr('fill', 'red');
-
-    // Add a test rect
-    this.previewGroup
-      .append('rect')
-      .attr('width', this.innerWidth)
-      .attr('height', this.previewHeight)
-      .attr('fill', 'url(#previewGradient)');
-
-    // Draw editor 'background'
-    // this.svg
-    //   .append('rect')
-    //   .attr('width', this.width)
-    //   .attr('height', this.height)
-    //   .attr('fill', 'black')
-    //   .lower();
-  }
-
-  generateGradient() {
     // Get all nodes
-    const nodes = this.nodeManager.getNodes();
+    let nodes = this.nodeManager.getNodes();
 
-    this.previewGradient
-      .selectAll('stop')
+    // Start by generating/updating the gradient
+    this.generateGradient(nodes);
+
+    // Update gradient fill for preview element
+    this.previewElement.attr('fill', 'url(#previewGradient)');
+
+    // Draw node graph
+    const yScale = yValue => -yValue;
+    const path = node =>
+      d3
+        .line()
+        .x(node => node.x)
+        .y(node => yScale(node.y))(nodes);
+
+    // Lines
+    let lines = this.graphOrigin
+      .append('path')
+      .attr('fill', 'none')
+      .attr('stroke', 'black')
+      .attr('stroke-width', 2)
+      .attr('d', path);
+    // Dots
+    this.graphOrigin
+      .selectAll('circle')
       .data(nodes)
       .join(enter => {
         enter
-          .append('stop')
-          .attr('stop-color', node => node.getCSSColor())
-          .attr('offset', node => node.getOffsetPercentage(this.innerWidth));
+          .append('circle')
+          .attr('cx', d => d.x)
+          .attr('cy', d => yScale(d.y))
+          .attr('fill', d => d.getCSSColor())
+          .attr('r', 5)
+          .call(
+            d3
+              .drag()
+              .subject(d => ({ x: d.x, y: yScale(d.y) }))
+              .on('drag', (d, i, n) => {
+                let { x, y } = d3.event;
+
+                // Clamp values within range
+                x = Math.min(Math.max(0, x), this.innerWidth);
+                y = -Math.min(Math.max(0, yScale(y)), this.editorHeight);
+
+                d3.select(n[i])
+                  .attr('cx', (d.x = x))
+                  .attr('cy', (d.y = y));
+
+                // TODO:  Find a way to let NodeManager sort this
+                //        without breaking the indexing for the circles
+                nodes[i].x = x;
+                nodes[i].y = yScale(y);
+
+                lines.attr('d', path);
+
+                // TODO: Y value does not seem to affect alpha
+                this.generateGradient(nodes);
+              })
+          );
       });
+  }
+
+  generateGradient(nodes) {
+    this.previewGradient
+      .selectAll('stop')
+      .data(nodes)
+      .join('stop')
+      // TODO: Alpha set to max when Y value is at min
+      .attr('stop-color', node => node.getCSSColor(node.y / this.editorHeight))
+      .attr('offset', node => node.getOffsetPercentage(this.innerWidth));
   }
 }
