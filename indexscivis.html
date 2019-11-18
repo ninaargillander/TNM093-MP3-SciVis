@@ -42,11 +42,9 @@ const previewHeight = 50;
 const previewTopPadding = 10;
 
 const nodeManager = new NodeManager();
-// Test nodes
-nodeManager.addNode(67, 12, 19, 110, 140);
-nodeManager.addNode(37, 62, 109, 3, 80);
-nodeManager.addNode(width - margins.left - margins.right, 28, 4, 155, 26);
-nodeManager.addNode(0, 0, 4, 155, 26);
+// Placeholder nodes
+nodeManager.addNode(width - margins.left - margins.right, 0, 256, 256, 256);
+nodeManager.addNode(0, 0, 0, 0, 0);
 
 const TFG = new TransferFunctionGenerator(256, width - margins.left - margins.right, nodeManager);
 
@@ -1016,46 +1014,50 @@ function postError(msg) {
 
 
 <body onload="main();">
-  <p id="error"></p>
-  <canvas id="glCanvas" width="640" height="480"></canvas>
-  <p>
-    Rendering parameters
-    <div>Step size: <input type="range" min="10" max="10000" value="1000" class="slider" id="stepSize" oninput="triggerRendering();"> </div>
+  <div style="display: flex;">
     <div>
-      <div>Compositing method:</div>
-      <div><input type="radio" name="compositing" value="ftb" onchange="triggerRendering();" checked>Front-to-back</div>
-      <div><input type="radio" name="compositing" value="fhp" onchange="triggerRendering();">First hit-point</div>
-      <div><input type="radio" name="compositing" value="mip" onchange="triggerRendering();">Maximum-intensity projection</div>
+      <p id="error"></p>
+      <canvas id="glCanvas" width="640" height="480"></canvas>
+      <p>
+        Rendering parameters
+        <div>Step size: <input type="range" min="10" max="10000" value="1000" class="slider" id="stepSize" oninput="triggerRendering();"> </div>
+        <div>
+          <div>Compositing method:</div>
+          <div><input type="radio" name="compositing" value="ftb" onchange="triggerRendering();" checked>Front-to-back</div>
+          <div><input type="radio" name="compositing" value="fhp" onchange="triggerRendering();">First hit-point</div>
+          <div><input type="radio" name="compositing" value="mip" onchange="triggerRendering();">Maximum-intensity projection</div>
+        </div>
+      </p>
+      <p>
+        Camera
+          <div> r: <input type="range" min="0" max="100" value="50" class="slider" id="camera-r" oninput="triggerRendering();"></div>
+          <div> phi: <input type="range" min="0" max="360" value="35" class="slider" id="camera-phi" oninput="triggerRendering();"></div>
+          <div> theta: <input type="range" min="1" max="180" value="65" class="slider" id="camera-theta" oninput="triggerRendering();"></div>
+      </p>
+      <p>
+        Debugging
+          <div>Rendering output:</div>
+          <div><input type="radio" name="debug-output" value="volume" onchange="triggerRendering();" checked>Volume Rendering</div>
+          <div><input type="radio" name="debug-output" value="entry" onchange="triggerRendering();">Entry Points</div>
+          <div><input type="radio" name="debug-output" value="exit" onchange="triggerRendering();">Exit Points</div>
+          <div><input type="radio" name="debug-output" value="direction" onchange="triggerRendering();">Ray direction</div>
+          <div><input type="radio" name="debug-output" value="transfer" onchange="triggerRendering();">Transfer Function</div>
+          <div><input type="radio" name="debug-output" value="slice" onchange="triggerRendering();">Volume Slice</div>
+          <div><input type="radio" name="debug-output" value="slice-transfer" onchange="triggerRendering();">Volume Slice with transfer function</div>
+      </p>
     </div>
-  </p>
-  <p>
-    Camera
-      <div> r: <input type="range" min="0" max="100" value="50" class="slider" id="camera-r" oninput="triggerRendering();"></div>
-      <div> phi: <input type="range" min="0" max="360" value="35" class="slider" id="camera-phi" oninput="triggerRendering();"></div>
-      <div> theta: <input type="range" min="1" max="180" value="65" class="slider" id="camera-theta" oninput="triggerRendering();"></div>
-  </p>
-  <p>
-    Debugging
-      <div>Rendering output:</div>
-      <div><input type="radio" name="debug-output" value="volume" onchange="triggerRendering();" checked>Volume Rendering</div>
-      <div><input type="radio" name="debug-output" value="entry" onchange="triggerRendering();">Entry Points</div>
-      <div><input type="radio" name="debug-output" value="exit" onchange="triggerRendering();">Exit Points</div>
-      <div><input type="radio" name="debug-output" value="direction" onchange="triggerRendering();">Ray direction</div>
-      <div><input type="radio" name="debug-output" value="transfer" onchange="triggerRendering();">Transfer Function</div>
-      <div><input type="radio" name="debug-output" value="slice" onchange="triggerRendering();">Volume Slice</div>
-      <div><input type="radio" name="debug-output" value="slice-transfer" onchange="triggerRendering();">Volume Slice with transfer function</div>
-  </p>
-
-  <!-- UI element for editing the transfer function -->
-  <div>
-    <div id="transferFunctionEditor"></div>
-    <label for="colorSelection">Select node color: </label>
-    <input
-      type="color"
-      disabled="disabled"
-      name="colorSelection"
-      id="colorSelection"
-    />
+  
+    <!-- UI element for editing the transfer function -->
+    <div>
+      <div id="transferFunctionEditor"></div>
+      <label for="colorSelection">Select node color: </label>
+      <input
+        type="color"
+        disabled="disabled"
+        name="colorSelection"
+        id="colorSelection"
+      />
+    </div>
   </div>
 </body>
 
