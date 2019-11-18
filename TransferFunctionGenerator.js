@@ -16,7 +16,7 @@ class TransferFunctionGenerator {
   getTransferFunction() {
     // Sample and interpolate between the nodes
     // Store values in 'result'
-    let result = new Array(this.resolution * 4);
+    let result = new Uint8Array(this.resolution * 4);
     let resultIndex = 0;
 
     // Get all nodes from NodeManager
