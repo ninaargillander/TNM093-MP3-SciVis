@@ -14,6 +14,9 @@ class Editor {
     this.previewTopPadding = previewTopPadding;
     this.nodeManager = nodeManager;
 
+    this.selectedNode = '';
+    this.yScale = yValue => -yValue;
+
     // Width and height of editor and preview combined
     this.innerWidth = width - margins.left - margins.right;
     this.innerHeight = height - margins.top - margins.bottom;
@@ -36,7 +39,17 @@ class Editor {
     // Selection handle for editor rectangle group
     this.editorGroup = this.svg
       .append('g')
-      .attr('transform', `translate(${margins.left}, ${margins.top})`);
+      .attr('transform', `translate(${margins.left}, ${margins.top})`)
+      .append('rect')
+      .attr('width', this.innerWidth)
+      .attr('height', this.editorHeight)
+      .attr('fill', '#ccc')
+      .on('click', (d, i, n) => {
+        const [x, y] = d3.mouse(n[i]);
+        console.log(x, y);
+        this.nodeManager.addNode(x, this.editorHeight - y, 0, 0, 0);
+        this.draw();
+      });
 
     // Selection handle for preview rectangle group
     this.previewGroup = this.svg
@@ -76,7 +89,13 @@ class Editor {
     this.draw();
   }
 
+  clear() {
+    this.graphOrigin.selectAll('*').remove();
+  }
+
   draw() {
+    this.clear();
+
     // Get all nodes
     let nodes = this.nodeManager.getNodes();
 
@@ -87,12 +106,11 @@ class Editor {
     this.previewElement.attr('fill', 'url(#previewGradient)');
 
     // Draw node graph
-    const yScale = yValue => -yValue;
     const path = node =>
       d3
         .line()
         .x(node => node.x)
-        .y(node => yScale(node.y))(nodes);
+        .y(node => this.yScale(node.y))(nodes);
 
     // Lines
     let lines = this.graphOrigin
@@ -109,19 +127,48 @@ class Editor {
         enter
           .append('circle')
           .attr('cx', d => d.x)
-          .attr('cy', d => yScale(d.y))
+          .attr('cy', d => this.yScale(d.y))
           .attr('fill', d => d.getCSSColor())
           .attr('r', 5)
+          .attr('stroke', 'black')
+          .attr('stroke-width', (d, i) => (this.selectedNode === i ? 2 : 0))
+          .on('click', (d, i, n) => {
+            //
+            // Select node to change color
+            //
+            const clicked = d3.select(n[i]);
+
+            if (i === this.selectedNode) {
+              // Deselect current node
+              this.selectedNode = '';
+              clicked.attr('stroke-width', 0);
+              clearBoundNode();
+            } else {
+              // Select the clicked node
+              this.selectedNode = i;
+              d3.selectAll('circle').attr('stroke-width', 0);
+              clicked.attr('stroke-width', 2);
+              bindNode(nodes[i]);
+            }
+          })
           .call(
             d3
               .drag()
-              .subject(d => ({ x: d.x, y: yScale(d.y) }))
+              .subject(d => ({ x: d.x, y: this.yScale(d.y) }))
               .on('drag', (d, i, n) => {
+                //
+                // Drag behaviour starts here
+                //
                 let { x, y } = d3.event;
 
                 // Clamp values within range
-                x = Math.min(Math.max(0, x), this.innerWidth);
-                y = -Math.min(Math.max(0, yScale(y)), this.editorHeight);
+                y = -Math.min(Math.max(0, this.yScale(y)), this.editorHeight);
+                // Check if first or last node
+                if (i === 0 || i === nodes.length - 1) {
+                  x = nodes[i].x;
+                } else {
+                  x = Math.min(Math.max(nodes[i - 1].x, x), nodes[i + 1].x);
+                }
 
                 d3.select(n[i])
                   .attr('cx', (d.x = x))
@@ -129,13 +176,32 @@ class Editor {
 
                 // TODO:  Find a way to let NodeManager sort this
                 //        without breaking the indexing for the circles
-                nodes[i].x = x;
-                nodes[i].y = yScale(y);
+                nodes[i].setXY(x, this.yScale(y));
 
                 lines.attr('d', path);
 
-                // TODO: Y value does not seem to affect alpha
                 this.generateGradient(nodes);
+
+                //
+                // Drag behaviour ends here
+                //
+              })
+              .on('end', (d, i, n) => {
+                // Delete nodes that are dragged outside of the editor
+                let { x, y } = d3.event;
+                // Check if first or last node
+                if (i === 0 || i === nodes.length - 1) {
+                  return;
+                } else if (
+                  // TODO: Find proper bounds
+                  x > this.width ||
+                  x < this.margins.left ||
+                  this.yScale(y) > this.height ||
+                  this.yScale(y) < this.margins.top
+                ) {
+                  this.nodeManager.removeNode(i);
+                  this.draw();
+                }
               })
           );
       });
@@ -146,7 +212,6 @@ class Editor {
       .selectAll('stop')
       .data(nodes)
       .join('stop')
-      // TODO: Alpha set to max when Y value is at min
       .attr('stop-color', node => node.getCSSColor(node.y / this.editorHeight))
       .attr('offset', node => node.getOffsetPercentage(this.innerWidth));
   }

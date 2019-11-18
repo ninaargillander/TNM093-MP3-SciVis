@@ -1,10 +1,7 @@
 class Node {
   constructor(x, y, r, g, b) {
-    this.x = x;
-    this.y = y;
-    this.r = r;
-    this.g = g;
-    this.b = b;
+    this.setXY(x, y);
+    this.setRGB(r, g, b);
   }
 
   setXY(x, y) {
@@ -21,6 +18,10 @@ class Node {
   getCSSColor(alpha) {
     if (alpha !== null) return d3.rgb(this.r, this.g, this.b, alpha);
     else return d3.rgb(this.r, this.g, this.b);
+  }
+
+  getHexColor() {
+    return d3.color(`rgb(${this.r},${this.g},${this.b})`).formatHex();
   }
 
   getOffsetPercentage(width) {

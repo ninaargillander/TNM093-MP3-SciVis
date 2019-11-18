@@ -5,7 +5,16 @@
   </head>
   <body>
     <h1>Transfer function thing</h1>
-    <div id="transferFunctionEditor"></div>
+    <div>
+      <div id="transferFunctionEditor"></div>
+      <label for="colorSelection">Select node color: </label>
+      <input
+        type="color"
+        disabled="disabled"
+        name="colorSelection"
+        id="colorSelection"
+      />
+    </div>
 
     <!-- D3 import -->
     <script src="https://d3js.org/d3.v5.min.js"></script>
@@ -15,6 +24,7 @@
     <script type="text/javascript" src="NodeManager.js"></script>
     <script type="text/javascript" src="TransferFunctionGenerator.js"></script>
     <script type="text/javascript" src="Editor.js"></script>
+    <script type="text/javascript" src="colorSelection.js"></script>
     <script type="text/javascript" src="main.js"></script>
   </body>
 </html>
