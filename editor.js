@@ -32,6 +32,7 @@ class Editor {
     this.previewGradient = this.defs
       .append('linearGradient')
       .attr('id', 'previewGradient');
+    this.colorSelection = d3.select('#colorSelection');
 
     // Set up the svg groups for the editor and preview
     this.svg.attr('width', width).attr('height', height);
@@ -94,6 +95,7 @@ class Editor {
   }
 
   draw() {
+    console.log('Drawing editor');
     this.clear();
 
     // Get all nodes
@@ -142,13 +144,13 @@ class Editor {
               // Deselect current node
               this.selectedNode = '';
               clicked.attr('stroke-width', 0);
-              clearBoundNode();
+              this.clearBoundNode();
             } else {
               // Select the clicked node
               this.selectedNode = i;
               d3.selectAll('circle').attr('stroke-width', 0);
               clicked.attr('stroke-width', 2);
-              bindNode(nodes[i]);
+              this.bindNode(nodes[i]);
             }
           })
           .call(
@@ -214,5 +216,22 @@ class Editor {
       .join('stop')
       .attr('stop-color', node => node.getCSSColor(node.y / this.editorHeight))
       .attr('offset', node => node.getOffsetPercentage(this.innerWidth));
+
+    triggerTransferFunctionUpdate();
+  }
+
+  bindNode(node) {
+    this.colorSelection
+      .attr('value', node.getHexColor())
+      .attr('disabled', null)
+      .on('change', (d, i, n) => {
+        let value = d3.rgb(n[i].value);
+        node.setRGB(value.r, value.g, value.b);
+        this.draw();
+      });
+  }
+
+  clearBoundNode() {
+    this.colorSelection.attr('value', '#000000').attr('disabled', 'disabled');
   }
 }
