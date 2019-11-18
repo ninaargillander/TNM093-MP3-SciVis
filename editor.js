@@ -189,15 +189,15 @@ class Editor {
               .on('end', (d, i, n) => {
                 // Delete nodes that are dragged outside of the editor
                 let { x, y } = d3.event;
+                console.log(x, y);
                 // Check if first or last node
                 if (i === 0 || i === nodes.length - 1) {
                   return;
                 } else if (
-                  // TODO: Find proper bounds
                   x > this.width ||
-                  x < this.margins.left ||
+                  x < -this.margins.left ||
                   this.yScale(y) > this.height ||
-                  this.yScale(y) < this.margins.top
+                  this.yScale(y) < -this.margins.bottom
                 ) {
                   this.nodeManager.removeNode(i);
                   this.draw();
