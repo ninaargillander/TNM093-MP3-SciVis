@@ -1,11 +1,11 @@
 class TransferFunctionGenerator {
-  constructor(resolution, editorWidth, nodeManager) {
+  constructor(resolution, editorWidth, editorHeight, nodeManager) {
     this.resolution = resolution;
     this.x = d3
       .scaleLinear()
       .domain([0, resolution - 1])
       .range([0, editorWidth]);
-
+    this.editorHeight = editorHeight;
     this.nodeManager = nodeManager;
   }
 
@@ -37,11 +37,14 @@ class TransferFunctionGenerator {
 
       // Determine interpolator
       const t = (this.x(i) - p1.x) / (p2.x - p1.x);
+      // Get node alpha values
+      const p1a = p1.getAlpha(this.editorHeight);
+      const p2a = p2.getAlpha(this.editorHeight);
       // Interpolate values
       result[resultIndex++] = p1.r + t * (p2.r - p1.r);
       result[resultIndex++] = p1.g + t * (p2.g - p1.g);
       result[resultIndex++] = p1.b + t * (p2.b - p1.b);
-      result[resultIndex++] = p1.y + t * (p2.y - p1.y);
+      result[resultIndex++] = p1a + t * (p2a - p1a);
     }
 
     return result;

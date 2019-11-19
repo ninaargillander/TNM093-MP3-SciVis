@@ -46,6 +46,7 @@ class Editor {
       .attr('height', this.editorHeight)
       .attr('fill', '#ccc')
       .on('click', (d, i, n) => {
+        // Adds new node to the editor and NodeManager
         const [x, y] = d3.mouse(n[i]);
         console.log(x, y);
         this.nodeManager.addNode(x, this.editorHeight - y, 0, 0, 0);

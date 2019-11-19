@@ -15,6 +15,10 @@ class Node {
     this.b = b;
   }
 
+  getAlpha(height) {
+    return (255 * this.y) / height;
+  }
+
   getCSSColor(alpha) {
     if (alpha !== null) return d3.rgb(this.r, this.g, this.b, alpha);
     else return d3.rgb(this.r, this.g, this.b);

@@ -46,7 +46,8 @@ const nodeManager = new NodeManager();
 nodeManager.addNode(width - margins.left - margins.right, 0, 256, 256, 256);
 nodeManager.addNode(0, 0, 0, 0, 0);
 
-const TFG = new TransferFunctionGenerator(256, width - margins.left - margins.right, nodeManager);
+const innerHeight = height - margins.top - margins.bottom;
+const TFG = new TransferFunctionGenerator(256, width - margins.left - margins.right, innerHeight - previewHeight - previewTopPadding, nodeManager);
 
 //
 //   Shader codes
